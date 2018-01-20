@@ -59,7 +59,7 @@
             var rate = elRate.value / 100 / 12;
             var consumption = elConsumption.value * 10000;
             var list = [];
-            var interest = 0;
+            var interest = 0,totalInterest = 0;
             var thisYear = parseInt(elFromYear.value) ;
             var thisMonth = parseInt(elFromMonth.value) ;
             var i = thisMonth,
@@ -75,7 +75,7 @@
                return ;
             }
             if(capital * rate >= consumption) {
-               elDuration.innerHTML = "可以永续使用" ;
+               elDuration.innerHTML = "每月利息" + (capital*rate).toFixed(2) + "元,超过消费额,可以永续使用" ;
                elList.innerHTML = "" ;
                return ;
             }
@@ -83,13 +83,13 @@
             list.push("<tbody>");
             while(capital > 0.0) {
                interest = capital * rate;
+               totalInterest += interest ;
                if(capital >= consumption - interest) {
-                  capital = Math.floor(capital + interest - consumption);
+                  capital = capital + interest - consumption;
                } else {
                   break;
                }
-               interest = Math.floor(interest);
-               list.push("<tr><td>" + (thisYear + y) + "</td><td>" + i + "</td><td>" + capital + "</td><td>" + interest + "</td></tr>");
+               list.push("<tr><td>" + (thisYear + y) + "</td><td>" + i + "</td><td>" + capital.toFixed(2) + "</td><td>" + interest.toFixed(2) + "</td></tr>");
                if(i % 12 == 0) {
                   y++;
                   i = 1;
@@ -98,10 +98,14 @@
                }
                monthes += 1;
             }
+            monthes-- ;
             list.push("</tbody>");
-            var elapsed = "可用" + Math.floor(monthes / 12) + "年";
+            var elapsed = "可用";
+            if(monthes > 12) elapsed += Math.floor(monthes / 12) + "年";
             if(monthes % 12 !== 0) elapsed += monthes - Math.floor(monthes / 12) * 12 + "个月";
-            if(capital > 0.0) elapsed += ",剩余:" + Math.floor(capital) + "元。";
+            elapsed += "(共" + monthes + "个月)。<br>"
+            if(capital > 0.0) elapsed += "还剩余:" + capital.toFixed(2) + "元。";
+            elapsed += "<br>总消费:" + ((consumption * monthes)/10000).toFixed(0) + "万元。<br>总利息:" + (totalInterest/10000).toFixed(0) + "万元。";
             elDuration.innerHTML = elapsed;
             elList.innerHTML = list.join("\n");
          }
