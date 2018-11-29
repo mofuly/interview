@@ -30,6 +30,9 @@
             elSummary = document.getElementById("summary");
             elSalaryList = document.getElementById("salaryList");
 
+            elSummary.innerHTML = "";
+            elSalaryList.innerHTML = "";
+            
             if(!isNumber(elCapital.value)) {
                 alert("本金输入有误");
                 return;
