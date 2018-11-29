@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script>
+        function isNumber(val) {
+            var regPos = /^\d+(\.\d+)?$/; //非负浮点数
+            var regNeg = /^(-(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*)))$/; //负浮点数
+            if (regPos.test(val) || regNeg.test(val)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        function calculate() {
+            var capital,rate,salary,monthRate;
+            var termNo = 0, years = 0, monthesLeaved = 0;
+            var table = [];
+            var summary = "";
+            var elCapital,elRate,elSalary,elSummary,elSalaryList;
+
+            elCapital = document.getElementById("capital");
+            elRate = document.getElementById("rate");
+            elSalary = document.getElementById("salary");
+            elSummary = document.getElementById("summary");
+            elSalaryList = document.getElementById("salaryList");
+
+            if(!isNumber(elCapital.value)) {
+                alert("本金输入有误");
+                return;
+            }
+            if(!isNumber(elRate.value)) {
+                alert("利率输入有误");
+                return;
+            }
+            if(!isNumber(elSalary.value)) {
+                alert("每月领取数输入有误");
+                return;
+            }
+
+            capital = Number(elCapital.value) * 10000;
+            rate = Number(elRate.value) / 100 ;
+            monthRate = rate / 12;
+            salary = Number(elSalary.value);
+
+            table.push("<h3>每月领取数:" + salary + "</h3>");
+            table.push("<table>");
+            table.push("\t<thead>\n\t\t<th>期数</th>\n\t\t<th>剩余本金</th>\n\t</thead>");
+            table.push("\t<tbody>");
+            while (capital >= salary) {
+                capital = (capital * (1 + monthRate) - salary).toFixed(2);
+                termNo++;
+                table.push("\t<tr>");
+                table.push("\t\t<td>" + termNo + "</td>");
+                table.push("\t\t<td>" + capital + "</td>");
+                table.push("\t</tr>");
+            }
+            table.push("\t</tbody>");
+            table.push("</table>");
+
+            years = (termNo / 12).toFixed(0);
+            monthesLeaved = termNo % 12;
+
+            elSalaryList.innerHTML = table.join("\n");
+            summary = "一共可以领取" + years + "年" ;
+            if(monthesLeaved > 0) summary += monthesLeaved + "个月";
+            elSummary.innerHTML = summary ;
+        }
+    </script>
+</head>
+
+<body>
+    <div>
+        本金数(万元)<input id="capital" value="120"/> <br />
+        本金年利率：<input id="rate" value="3"/>% <br />
+        每月领取数：<input id="salary" value="6500"/>元 <br />
+        <button id="calculate" onclick="calculate()">计算</button>
+    </div>
+    <div id="summary"></div>
+    <div id="salaryList">
+
+    </div>
+</body>
+
+</html>
