@@ -53,7 +53,7 @@
             table.push("\t<thead>\n\t\t<th>期数</th>\n\t\t<th>剩余本金</th>\n\t</thead>");
             table.push("\t<tbody>");
             while (capital >= salary) {
-                capital = (capital * (1 + monthRate) - salary).toFixed(2);
+                capital = ((capital - salary) * (1 + monthRate)).toFixed(2);
                 termNo++;
                 table.push("\t<tr>");
                 table.push("\t\t<td>" + termNo + "</td>");
