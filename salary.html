@@ -52,7 +52,7 @@
             table.push("<table>");
             table.push("\t<thead>\n\t\t<th>期数</th>\n\t\t<th>剩余本金</th>\n\t</thead>");
             table.push("\t<tbody>");
-            while (capital >= salary) {
+            while (capital >= salary && termNo <= 1200) {
                 capital = ((capital - salary) * (1 + monthRate)).toFixed(2);
                 termNo++;
                 table.push("\t<tr>");
@@ -67,8 +67,12 @@
             monthesLeaved = termNo % 12;
 
             elSalaryList.innerHTML = table.join("\n");
-            summary = "一共可以领取" + years + "年" ;
-            if(monthesLeaved > 0) summary += monthesLeaved + "个月";
+            if(termNo >= 120) {
+                summary = "可以领取的年数超过100年";
+            } else {
+                summary = "一共可以领取" + years + "年" ;
+                if(monthesLeaved > 0) summary += monthesLeaved + "个月";
+            }
             elSummary.innerHTML = summary ;
         }
     </script>
