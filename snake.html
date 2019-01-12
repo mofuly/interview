@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Snake</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .field {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            background-color: #202020;
+            overflow: hidden;
+            left: 50% auto;
+        }
+
+        .snakeNode {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .snakeBody {
+            background-color: aquamarine;
+        }
+
+        .snakeHead {
+            background-color: coral;
+        }
+
+        .food {
+            position: absolute;
+            background-color: red;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: none;
+        }
+
+        .score {
+            height: 50px;
+            line-height: 50px;
+            font-size: 30px;
+            color: red;
+            font-weight: bolder;
+            text-align: center;
+        }
+
+        .run {
+            width: 40px;
+            height: 50px;
+            border-left: 30px;
+            border-color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="score">果果:
+        <span id="score">0</span>
+        <span class="run"></span>
+    </div>
+    <div class="field">
+        <i class="food"></i>
+    </div>
+    <script>
+        class Snake {
+            constructor(fieldSize = 30, bodyLen = 3, bodySize = 20) {
+                let x = 3,
+                    y = 0;
+
+                this.fieldSize = fieldSize;
+                this.bodyLen = bodyLen;
+                this.bodySize = bodySize;
+
+                this.paused = false;
+                this.fieldSize = fieldSize * bodySize;
+                this.direction = 'UP';
+                this.bodyData = [];
+                this.score = 0;
+                this.foodEle = document.getElementsByClassName('food')[0];
+                this.foodX = -1;
+                this.foodY = -1;
+
+                y = fieldSize - bodyLen - 1;
+                for (let i = 0; i < bodyLen; i++) {
+                    this.bodyData.push({
+                        x,
+                        y,
+                        ele: -1
+                    });
+                    y++;
+                }
+
+                this.field = document.getElementsByClassName('field')[0];
+                this.field.style.width = this.fieldSize + 'px';
+                this.field.style.height = this.fieldSize + 'px';
+
+                this.genFood();
+                this.interval = setInterval(() => {
+                    if (this.paused) {
+                        return;
+                    }
+                    this.move(this.direction);
+                }, 500);
+
+                document.addEventListener('click', () => {
+                    this.paused = !this.paused;
+                }, false);
+
+                document.addEventListener('keydown', (event) => {
+                    switch (event.keyCode) {
+                        case 37: // left
+                            this.move('LEFT');
+                            break;
+                        case 38: // up
+                            this.move('UP');
+                            break;
+                        case 39: // right
+                            this.move('RIGHT');
+                            break;
+                        case 40: // down
+                            this.move('DOWN');
+                            break;
+                    }
+                }, false);
+            }
+
+            move(direction) {
+                let {
+                    x,
+                    y,
+                    ele
+                } = this.bodyData[0];
+                ele = this.bodyData[this.bodyData.length - 1].ele;
+
+                switch (direction) {
+                    case 'UP':
+                        switch (this.direction) {
+                            case 'UP':
+                                y--;
+                                this.direction = direction;
+                                break;
+                            case 'LEFT':
+                                x--;
+                                this.direction = direction;
+                                break;
+                            case 'RIGHT':
+                                x++;
+                                this.direction = direction;
+                                break;
+                        }
+                        break;
+                    case 'DOWN':
+                        switch (this.direction) {
+                            case 'DOWN':
+                                y++;
+                                this.direction = direction;
+                                break;
+                            case 'LEFT':
+                                x--;
+                                this.direction = direction;
+                                break;
+                            case 'RIGHT':
+                                x++;
+                                this.direction = direction;
+                                break;
+                        }
+                        break;
+                    case 'LEFT':
+                        switch (this.direction) {
+                            case 'UP':
+                                y--;
+                                this.direction = direction;
+                                break;
+                            case 'DOWN':
+                                y++;
+                                this.direction = direction;
+                                break;
+                            case 'LEFT':
+                                x--;
+                                this.direction = direction;
+                                break;
+                        }
+                        break;
+                    case 'RIGHT':
+                        switch (this.direction) {
+                            case 'UP':
+                                y--;
+                                this.direction = direction;
+                                break;
+                            case 'DOWN':
+                                y++;
+                                this.direction = direction;
+                                break;
+                            case 'RIGHT':
+                                x++;
+                                this.direction = direction;
+                                break;
+                        }
+                        break;
+                }
+
+                // ele.className = 'snakeNode snakeHead';
+                this.bodyData.unshift({
+                    x,
+                    y,
+                    ele
+                });
+                this.bodyData.pop();
+                this.throughWall();
+                this.eatFood();
+                if (this.isDead()) {
+                    this.gameOver();
+                    alert('game over');
+                }
+                this.show();
+            }
+
+            throughWall() {
+                let {
+                    x,
+                    y,
+                    ele
+                } = this.bodyData[0];
+                let size = parseInt(this.fieldSize / this.bodySize);
+
+                if (x < 0) {
+                    x = size - 1;
+                }
+                if (x >= size) {
+                    x = 0;
+                }
+                if (y < 0) {
+                    y = size - 1;
+                }
+                if (y >= size) {
+                    y = 0;
+                }
+                this.bodyData[0] = {
+                    x,
+                    y,
+                    ele
+                };
+            }
+
+            show() {
+                for (let i = 0, len = this.bodyData.length; i < len; i++) {
+                    if (this.bodyData[i].ele === -1) {
+                        this.bodyData[i].ele = document.createElement('i');
+                        this.bodyData[i].ele.style.width = this.bodySize;
+                        this.bodyData[i].ele.style.height = this.bodySize;
+                        this.field.appendChild(this.bodyData[i].ele);
+                    }
+
+                    this.bodyData[i].ele.style.left = (this.bodyData[i].x * this.bodySize) + 'px';
+                    this.bodyData[i].ele.style.top = (this.bodyData[i].y * this.bodySize) + 'px';
+                    if (i > 0) {
+                        this.bodyData[i].ele.className = 'snakeNode snakeBody';
+                    } else {
+                        this.bodyData[i].ele.className = 'snakeNode snakeHead';
+                    }
+                }
+            }
+
+            gameOver() {
+                this.destroy();
+            }
+
+            destroy() {
+                clearInterval(this.interval);
+                this.bodyData.forEach(v => {
+                    v.ele.remove();
+                });
+            }
+
+            isDead() {
+                let {
+                    x,
+                    y
+                } = this.bodyData[0];
+
+                for (let i = 1, len = this.bodyData.length; i < len; i++) {
+                    if (x === this.bodyData[i].x && y === this.bodyData[i].y) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            coordInSnake({
+                x,
+                y
+            }) {
+                return this.bodyData.some((v) => {
+                    return v.x === x && v.y === y;
+                });
+            }
+
+            genFood() {
+                const maxCoord = parseInt(this.fieldSize / this.bodySize);
+                let x = 0,
+                    y = 0;
+
+                do {
+                    x = Math.floor((Math.random() * maxCoord));
+                    y = Math.floor((Math.random() * maxCoord));
+                } while (this.coordInSnake(x, y));
+
+                this.foodX = x;
+                this.foodY = y;
+
+                this.foodEle.style.left = x * this.bodySize + 'px';
+                this.foodEle.style.top = y * this.bodySize + 'px';
+                this.foodEle.style.display = 'block';
+            }
+
+            addTail() {
+                let tailDirection = 'h';
+                let len = this.bodyData.length;
+                let lastTail = this.bodyData[len - 1];
+                let lastSecondTail = this.bodyData[len - 2];
+                let {
+                    x,
+                    y,
+                    ele
+                } = lastTail;
+
+                if (lastTail.x === lastSecondTail.x) {
+                    tailDirection = 'v';
+                }
+
+                if (tailDirection === 'h') {
+                    y = Math.max(lastTail.y, lastSecondTail.y) + 1;
+                } else {
+                    y = Math.max(lastTail.y, lastSecondTail.y) + 1;
+                }
+
+                this.bodyData.push({
+                    x,
+                    y,
+                    ele
+                });
+            }
+
+            eatFood() {
+                const {
+                    x,
+                    y
+                } = this.bodyData[0];
+
+                if (x === this.foodX && y === this.foodY) {
+                    this.addScore();
+                    this.addTail();
+                    this.genFood();
+                }
+            }
+
+            addScore() {
+                this.score++;
+                document.getElementById('score').innerHTML = this.score;
+            }
+
+        }
+
+        const snake = new Snake(30, 3);
+        snake.show();
+    </script>
+</body>
+
+</html>
